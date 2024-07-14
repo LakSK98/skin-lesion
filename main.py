@@ -7,8 +7,10 @@ import numpy as np
 from io import BytesIO
 from PIL import Image
 from rule_based_classification import classify_disease
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 # with open('model.pkl', 'rb') as file:
 #     loaded_clf = pickle.load(file)
