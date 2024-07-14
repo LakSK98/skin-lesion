@@ -2,3 +2,5 @@ Flask
 Gunicorn
 opencv-python
 numpy
+scipy
+pillow
