@@ -5,3 +5,4 @@ numpy
 scipy==1.14.0
 pillow
 flask-cors==4.0.1
+tensorflow

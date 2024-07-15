@@ -1,4 +1,7 @@
 from configure import configure
+from tensorflow.keras.models import load_model
+import cv2
+import numpy as np
 
 def classify_bcc(arborizing_vessels, blue_gray_avoids, ulcerations):
     # Evaluate conditions based on the input features
@@ -61,11 +64,34 @@ def classify_melanoma(blue_white_veil, regression, asymmetry):
     else:
         return "Case not covered in the table"
     
+def get_disease_name(type_index, class_index):
+    # Define the lists of disease names
+    names1 = ['Lentigo Maligna Melanoma (LMM)', 'Nodular Melanoma (NM)', 'Superficial spreading melanoma (SSM)']
+    names2 = ['Nodular BCC', 'Superficial BCC', 'Pigmented BCC']
+    names3 = ['Keratoacanthoma-type SCC', 'Conventional SCC', 'Bowens Disease']
+    
+    # Create a dictionary to map type_index to the corresponding names list
+    disease_mapping = {
+        0: names1,
+        1: names2,
+        2: names3
+    }
+    
+    # Check if the provided type_index is valid
+    if type_index in disease_mapping:
+        names_list = disease_mapping[type_index]
+        # Check if the provided class_index is valid
+        if 0 <= class_index < len(names_list):
+            return names_list[class_index]
+        else:
+            return "Invalid class index"
+    else:
+        return "Invalid type index"
+    
 def classify_disease(asymmetry_presence, blue_white_veil_presence, regression_structure_presence,
             ul_presence, ovoids_presence, vessel_presence,
-            dotted_vessels_presence, white_follicles_presence, rosette_presence, color, symmetric):
+            dotted_vessels_presence, white_follicles_presence, rosette_presence, color, symmetric, image):
     done, error = configure(symmetric, color)
-    print(done, error)
     result = None
     if done:
         result = error
@@ -76,7 +102,19 @@ def classify_disease(asymmetry_presence, blue_white_veil_presence, regression_st
         elif symmetric == 1:
             result = classify_bcc(vessel_presence, ovoids_presence, ul_presence)
         elif symmetric == 2:
-            print(symmetric, color)
-            print(dotted_vessels_presence, rosette_presence, white_follicles_presence)
             result = classify_scc(dotted_vessels_presence, rosette_presence, white_follicles_presence)
-    return result
+    model = None
+    img= cv2.resize(image, (224, 224))
+    img_array = np.expand_dims(img, axis=0)
+    img_array = img_array / 255.0  # Normalize the image
+    if symmetric == 0:
+        model = load_model('./model/cnn_model_melonoma.h5')
+    elif symmetric == 1:
+        model = load_model('./model/cnn_model_bcc.h5')
+    elif symmetric == 2:
+        model = load_model('./model/cnn_model_scc.h5')
+    # Make a prediction
+    predictions = model.predict(img_array)
+    predicted_class = np.argmax(predictions, axis=1)
+    predicted = get_disease_name(symmetric, int(predicted_class))
+    return result, predicted

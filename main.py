@@ -37,12 +37,12 @@ def predict():
         ul_presence, ovoids_presence, vessel_presence = bcc_extract_features(image)
         dotted_vessels_presence, white_follicles_presence, rosette_presence = scc_extract_features(image)
         # prediction = loaded_clf.predict([features])
-        result = classify_disease(
+        result, predicted = classify_disease(
             asymmetry_presence, blue_white_veil_presence, regression_structure_presence,
             ul_presence, ovoids_presence, vessel_presence,
-            dotted_vessels_presence, white_follicles_presence, rosette_presence, color, skin_lesion
+            dotted_vessels_presence, white_follicles_presence, rosette_presence, color, skin_lesion, image
             )
-        return jsonify({"Disease": result}), 200
+        return jsonify({"Disease": result, "CNNPrediction": predicted}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
