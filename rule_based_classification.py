@@ -93,8 +93,10 @@ def classify_disease(asymmetry_presence, blue_white_veil_presence, regression_st
             dotted_vessels_presence, white_follicles_presence, rosette_presence, color, symmetric, image):
     done, error = configure(symmetric, color)
     result = None
+    predicted = None
     if done:
         result = error
+        predicted = error
     else:
         print(symmetric)
         if symmetric == 0:
@@ -103,18 +105,18 @@ def classify_disease(asymmetry_presence, blue_white_veil_presence, regression_st
             result = classify_bcc(vessel_presence, ovoids_presence, ul_presence)
         elif symmetric == 2:
             result = classify_scc(dotted_vessels_presence, rosette_presence, white_follicles_presence)
-    model = None
-    img= cv2.resize(image, (224, 224))
-    img_array = np.expand_dims(img, axis=0)
-    img_array = img_array / 255.0  # Normalize the image
-    if symmetric == 0:
-        model = load_model('./model/cnn_model_melonoma.h5')
-    elif symmetric == 1:
-        model = load_model('./model/cnn_model_bcc.h5')
-    elif symmetric == 2:
-        model = load_model('./model/cnn_model_scc.h5')
-    # Make a prediction
-    predictions = model.predict(img_array)
-    predicted_class = np.argmax(predictions, axis=1)
-    predicted = get_disease_name(symmetric, int(predicted_class))
+        model = None
+        img= cv2.resize(image, (224, 224))
+        img_array = np.expand_dims(img, axis=0)
+        img_array = img_array / 255.0  # Normalize the image
+        if symmetric == 0:
+            model = load_model('./model/cnn_model_melonoma.h5')
+        elif symmetric == 1:
+            model = load_model('./model/cnn_model_bcc.h5')
+        elif symmetric == 2:
+            model = load_model('./model/cnn_model_scc.h5')
+        # Make a prediction
+        predictions = model.predict(img_array)
+        predicted_class = np.argmax(predictions, axis=1)
+        predicted = get_disease_name(symmetric, int(predicted_class))
     return result, predicted
